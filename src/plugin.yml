@@ -1,0 +1,12 @@
+name: MGTNTRun
+main: com.jbou.mgtntrun.Main
+version: 1.0.0
+author: JBou
+softdepend: [MinigamesLib]
+depend: [MinigamesLib]
+loadbefore: [MinigamesLib]
+commands:
+   tr:
+      description: Main command
+      usage: /tr [action]
+      aliases: [tntrun, mgtntrun]
