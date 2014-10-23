@@ -5,13 +5,19 @@
 	<artifactId>MGTNTRun</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -37,6 +43,11 @@
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.comze_instancelabs</groupId>
+            <artifactId>MinigamesLib</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+    </dependencies>
 
 </project>

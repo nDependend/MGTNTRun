@@ -1,10 +1,19 @@
-#binary
+# Binary
 bin/
 
-#eclipse
+# Eclipse
 .classpath
 .project
 .settings/
 
-#maven
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Maven
+log/
 target/
+
+# Mac
+.DS_Store

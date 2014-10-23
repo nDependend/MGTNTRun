@@ -1,7 +1,9 @@
 package com.jbou.mgtntrun;
 
-import java.util.ArrayList;
-
+import com.comze_instancelabs.minigamesapi.*;
+import com.comze_instancelabs.minigamesapi.config.ArenasConfig;
+import com.comze_instancelabs.minigamesapi.util.Util;
+import com.comze_instancelabs.minigamesapi.util.Validator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,25 +21,17 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.NumberConversions;
 
-import com.comze_instancelabs.minigamesapi.Arena;
-import com.comze_instancelabs.minigamesapi.ArenaSetup;
-import com.comze_instancelabs.minigamesapi.ArenaState;
-import com.comze_instancelabs.minigamesapi.MinigamesAPI;
-import com.comze_instancelabs.minigamesapi.PluginInstance;
-import com.comze_instancelabs.minigamesapi.config.ArenasConfig;
-import com.comze_instancelabs.minigamesapi.util.Util;
-import com.comze_instancelabs.minigamesapi.util.Validator;
+import java.util.ArrayList;
 
 
 public class Main extends JavaPlugin implements Listener {
 
 	MinigamesAPI api = null;
-	PluginInstance pli = null;
-	static JavaPlugin plugin;
+	public static PluginInstance pli = null;
+	public static JavaPlugin plugin;
 	
 	public void onEnable() {
 		plugin = this;
@@ -47,7 +41,7 @@ public class Main extends JavaPlugin implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, this);
 		//add arenasetup
 		pli = pinstance;
-		pli.getArenaListener().loseY = 100;
+		//pli.getArenaListener().loseY = 100;
 		// pinstance.pvp = false;
 	}
 
@@ -74,30 +68,6 @@ public class Main extends JavaPlugin implements Listener {
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		return api.getCommandHandler().handleArgs(this, "tntrun", "/" + cmd.getName(), sender, args);
-	}
-	
-	@EventHandler
-	public void onPlayerMove(PlayerMoveEvent e) {
-		if (pli.global_players.containsKey(e.getPlayer().getName()) && !pli.global_lost.containsKey(e.getPlayer().getName())) {
-			final IArena a = (IArena) pli.global_players.get(e.getPlayer().getName());
-			if (a.getArenaState() == ArenaState.INGAME) {
-				Location loc = e.getPlayer().getLocation().add(0, -1, 0);
-				// remove block under player feet
-				Block blocktoremove = getBlockUnderPlayer(loc,e.getPlayer().getWorld());
-				if (blocktoremove != null) {
-					final Location blockloc = blocktoremove.getLocation();
-					Bukkit.getScheduler().scheduleSyncDelayedTask(
-							plugin,
-							new Runnable() {
-								@Override
-								public void run() {
-									a.getSmartReset().addChanged(blockloc.getBlock(),false);
-									blockloc.getBlock().setType(Material.AIR);
-								}
-							}, 5); //add delay in config
-				}
-			}
-		}
 	}
 	
 	@EventHandler
@@ -128,7 +98,6 @@ public class Main extends JavaPlugin implements Listener {
 					if (event.getCause() == DamageCause.ENTITY_ATTACK) {
 						p.setHealth(20D);
 						event.setCancelled(true);
-						return;
 					} else if (event.getCause() == DamageCause.FALL) {
 						event.setCancelled(true);
 					}
@@ -151,9 +120,37 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
+	public static void RemoveBlocksUnderPlayer(IArena arena) {
+		final IArena a = arena;
+		for (String player : a.getAllPlayers()) {
+			Player p = Bukkit.getPlayer(player);
+			if (pli.global_players.containsKey(p.getName()) && !pli.global_lost.containsKey(p.getName())) {
+				if (a.getArenaState() == ArenaState.INGAME) {
+					Location loc = p.getPlayer().getLocation().add(0, -1, 0);
+					// remove block under player feet
+					Block blocktoremove = Main.getBlockUnderPlayer(loc);
+					if (blocktoremove != null) {
+						final Location blockloc = blocktoremove.getLocation();
+						Bukkit.getScheduler().scheduleSyncDelayedTask(
+								plugin,
+								new Runnable() {
+									@Override
+									public void run() {
+										//Check if game hasn't stopped meanwhile
+										if (a.getArenaState() == ArenaState.INGAME) {
+											a.getSmartReset().addChanged(blockloc.getBlock(),false);
+											blockloc.getBlock().setType(Material.AIR);
+										}
+									}
+								}, 5); //add delay in config
+					}
+				}
+			}
+		}
+	}
 	
 	private static double PLAYER_BOUNDINGBOX_ADD = 0.3;
-	private Block getBlockUnderPlayer(Location location, World world) {
+	public static Block getBlockUnderPlayer(Location location) {
 		PlayerPosition loc = new PlayerPosition(location);
 		Block b11 = loc.getBlock(location.getWorld(), +PLAYER_BOUNDINGBOX_ADD, -PLAYER_BOUNDINGBOX_ADD);
 		if (b11.getType() != Material.AIR) {
@@ -174,7 +171,7 @@ public class Main extends JavaPlugin implements Listener {
 		return null;
 	}
 	
-	private static class PlayerPosition {
+	public static class PlayerPosition {
 
 		private double x;
 		private int y;

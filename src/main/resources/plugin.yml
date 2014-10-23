@@ -1,6 +1,6 @@
 name: MGTNTRun
 main: com.jbou.mgtntrun.Main
-version: 1.0.0
+version: ${project.version}
 author: JBou
 softdepend: [MinigamesLib]
 depend: [MinigamesLib]
