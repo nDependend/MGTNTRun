@@ -4,8 +4,6 @@ import com.comze_instancelabs.minigamesapi.*;
 import com.comze_instancelabs.minigamesapi.config.ArenasConfig;
 import com.comze_instancelabs.minigamesapi.util.Util;
 import com.comze_instancelabs.minigamesapi.util.Validator;
-import com.jbou.mgtntrun.IArena;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,26 +29,18 @@ import java.util.ArrayList;
 
 public class Main extends JavaPlugin implements Listener {
 
-	final String CONFIG_BLOCK_COLORS_PATH = "config.block_colors";
-	
 	MinigamesAPI api = null;
 	public static PluginInstance pli = null;
 	public static JavaPlugin plugin;
 	
-	private static ArrayList<Byte> blockBreakingColors;
-	
 	public void onEnable() {
 		plugin = this;
-		api = MinigamesAPI.setupAPI(this, "tntrun", IArena.class);
-		PluginInstance pinstance = MinigamesAPI.pinstances.get(this);
+		api = MinigamesAPI.getAPI().setupAPI(this, "tntrun", IArena.class);
+		PluginInstance pinstance = api.pinstances.get(this);
 		pinstance.addLoadedArenas(loadArenas(this, pinstance.getArenasConfig()));
 		Bukkit.getPluginManager().registerEvents(this, this);
 		//add arenasetup
 		pli = pinstance;
-		
-		this.getConfig().addDefault(CONFIG_BLOCK_COLORS_PATH, "0;1;2;3");
-		blockBreakingColors = (ArrayList<Byte>) this.getConfig().getByteList(CONFIG_BLOCK_COLORS_PATH);
-		
 		//pli.getArenaListener().loseY = 100;
 		// pinstance.pvp = false;
 	}
@@ -141,7 +131,7 @@ public class Main extends JavaPlugin implements Listener {
 					Block blocktoremove = Main.getBlockUnderPlayer(loc);
 					if (blocktoremove != null) {
 						final Location blockloc = blocktoremove.getLocation();
-						Bukkit.getScheduler().scheduleSyncRepeatingTask(
+						Bukkit.getScheduler().scheduleSyncDelayedTask(
 								plugin,
 								new Runnable() {
 									@Override
@@ -149,14 +139,10 @@ public class Main extends JavaPlugin implements Listener {
 										//Check if game hasn't stopped meanwhile
 										if (a.getArenaState() == ArenaState.INGAME) {
 											a.getSmartReset().addChanged(blockloc.getBlock(),false);
-											byte currentColor = blockloc.getBlock().getData();
-											if(currentColor == blockBreakingColors.size()-1)
-												blockloc.getBlock().setType(Material.AIR);
-											else
-												blockloc.getBlock().setData(blockBreakingColors.get(blockBreakingColors.indexOf(currentColor)+1));
+											blockloc.getBlock().setType(Material.AIR);
 										}
 									}
-								}, 5, blockBreakingColors.size()); //add delay in config, add 
+								}, 5); //add delay in config
 					}
 				}
 			}
